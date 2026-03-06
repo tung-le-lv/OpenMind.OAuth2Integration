@@ -7,13 +7,6 @@ public class AuthUrlResponse
     public string Provider { get; set; } = string.Empty;
 }
 
-public class AuthCallbackRequest
-{
-    public string Code { get; set; } = string.Empty;
-    public string State { get; set; } = string.Empty;
-    public string Provider { get; set; } = string.Empty;
-}
-
 public class EmailDto
 {
     public string Id { get; set; } = string.Empty;

@@ -20,6 +20,8 @@ public class AuthController(IAuthService authService) : ControllerBase
             var loginRequest = new LoginRequest { Email = request.Email, Password = request.Password };
             var response = await authService.LoginAsync(loginRequest);
             
+            SetJwtCookie(response.Token, response.ExpiresAt);
+            
             return Ok(response);
         }
         catch (Exception ex)
@@ -34,6 +36,9 @@ public class AuthController(IAuthService authService) : ControllerBase
         try
         {
             var response = await authService.LoginAsync(request);
+            
+            SetJwtCookie(response.Token, response.ExpiresAt);
+            
             return Ok(response);
         }
         catch (Exception ex)
@@ -48,6 +53,9 @@ public class AuthController(IAuthService authService) : ControllerBase
         try
         {
             var response = await authService.GoogleLoginAsync(request);
+            
+            SetJwtCookie(response.Token, response.ExpiresAt);
+            
             return Ok(response);
         }
         catch (UnauthorizedAccessException ex)
@@ -58,6 +66,20 @@ public class AuthController(IAuthService authService) : ControllerBase
         {
             return BadRequest(new { message = ex.Message });
         }
+    }
+
+    [HttpPost("logout")]
+    public IActionResult Logout()
+    {
+        Response.Cookies.Delete("jwt", new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Strict,
+            Path = "/"
+        });
+        
+        return Ok(new { message = "Logged out successfully" });
     }
 
     [HttpGet("me")]
@@ -84,5 +106,19 @@ public class AuthController(IAuthService authService) : ControllerBase
         {
             return BadRequest(new { message = ex.Message });
         }
+    }
+
+    private void SetJwtCookie(string token, DateTime expiresAt)
+    {
+        var cookieOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Strict,
+            Expires = expiresAt,
+            Path = "/"
+        };
+        
+        Response.Cookies.Append("accessToken", token, cookieOptions);
     }
 }

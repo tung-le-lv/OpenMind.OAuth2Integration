@@ -15,10 +15,9 @@ public class GoogleOAuthController(IGoogleOAuthIntegrationService googleService)
     [HttpGet("authorize")]
     public ActionResult<AuthUrlResponse> GetAuthorizationUrl()
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (userIdClaim == null || !int.TryParse(userIdClaim, out var userId))
+        if (!Authorize(out var userId, out var unauthorizedResult))
         {
-            return Unauthorized();
+            return unauthorizedResult;
         }
 
         var authUrl = googleService.GenerateAuthorizationUrl(userId);
@@ -42,10 +41,9 @@ public class GoogleOAuthController(IGoogleOAuthIntegrationService googleService)
     [HttpGet("emails")]
     public async Task<ActionResult<List<EmailDto>>> GetEmails([FromQuery] int maxResults = 10)
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (userIdClaim == null || !int.TryParse(userIdClaim, out var userId))
+        if (!Authorize(out var userId, out var unauthorizedResult))
         {
-            return Unauthorized();
+            return unauthorizedResult;
         }
 
         try
@@ -70,10 +68,9 @@ public class GoogleOAuthController(IGoogleOAuthIntegrationService googleService)
         [FromQuery] DateTime? timeMax = null,
         [FromQuery] int maxResults = 50)
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (userIdClaim == null || !int.TryParse(userIdClaim, out var userId))
+        if (!Authorize(out var userId, out var unauthorizedResult))
         {
-            return Unauthorized();
+            return unauthorizedResult;
         }
 
         try
@@ -95,10 +92,9 @@ public class GoogleOAuthController(IGoogleOAuthIntegrationService googleService)
     [HttpGet("status")]
     public async Task<IActionResult> GetStatus()
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (userIdClaim == null || !int.TryParse(userIdClaim, out var userId))
+        if (!Authorize(out var userId, out var unauthorizedResult))
         {
-            return Unauthorized();
+            return unauthorizedResult;
         }
 
         var hasValidToken = await googleService.HasValidTokenAsync(userId);
@@ -108,13 +104,25 @@ public class GoogleOAuthController(IGoogleOAuthIntegrationService googleService)
     [HttpDelete("revoke")]
     public async Task<IActionResult> RevokeAccess()
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (userIdClaim == null || !int.TryParse(userIdClaim, out var userId))
+        if (!Authorize(out var userId, out var unauthorizedResult))
         {
-            return Unauthorized();
+            return unauthorizedResult;
         }
 
         var success = await googleService.RevokeTokenAsync(userId);
         return success ? Ok() : BadRequest("Failed to revoke Google access");
+    }
+    
+    private bool Authorize(out int userId, out ActionResult unauthorizedResult)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (userIdClaim != null && int.TryParse(userIdClaim, out userId))
+        {
+            unauthorizedResult = null!;
+            return true;
+        }
+        userId = 0;
+        unauthorizedResult = Unauthorized();
+        return false;
     }
 }

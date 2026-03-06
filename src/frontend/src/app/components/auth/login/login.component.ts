@@ -64,7 +64,6 @@ export class LoginComponent implements OnInit, AfterViewInit {
       this.authService.googleLogin(response.credential).subscribe({
         next: () => {
           this.router.navigate(['/dashboard']);
-          this.snackBar.open('Login successful!', 'Close', { duration: 3000 });
         },
         error: (error) => {
           this.googleLoading = false;
@@ -84,7 +83,6 @@ export class LoginComponent implements OnInit, AfterViewInit {
       this.authService.login(this.loginForm.value).subscribe({
         next: () => {
           this.router.navigate(['/dashboard']);
-          this.snackBar.open('Login successful!', 'Close', { duration: 3000 });
         },
         error: (error) => {
           this.loading = false;

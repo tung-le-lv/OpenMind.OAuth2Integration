@@ -41,6 +41,18 @@ try
     builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         .AddJwtBearer(options =>
         {
+            options.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = context =>
+                {
+                    if (context.Request.Cookies.TryGetValue("accessToken", out var token))
+                    {
+                        context.Token = token;
+                    }
+                    return Task.CompletedTask;
+                }
+            };
+            
             options.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,

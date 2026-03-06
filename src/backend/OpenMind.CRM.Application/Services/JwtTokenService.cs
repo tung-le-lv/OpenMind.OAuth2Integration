@@ -10,9 +10,9 @@ namespace OpenMind.CRM.Application.Services;
 
 public class JwtTokenService(IConfiguration configuration, ILogger<JwtTokenService> logger) : IJwtTokenService
 {
-    private readonly string _secretKey = configuration["JWT:Secret"] ?? "your-super-secret-key-that-should-be-at-least-32-characters-long";
-    private readonly string _issuer = configuration["JWT:Issuer"] ?? "OpenMindCRM";
-    private readonly string _audience = configuration["JWT:Audience"] ?? "OpenMindCRM";
+    private readonly string _secretKey = configuration["JWT:Secret"] ?? throw new InvalidOperationException("JWT Secret is not configured");
+    private readonly string _issuer = configuration["JWT:Issuer"] ?? throw new InvalidOperationException("JWT Issuer is not configured");
+    private readonly string _audience = configuration["JWT:Audience"] ?? throw new InvalidOperationException("JWT Audience is not configured");
     private readonly int _expirationHours = int.Parse(configuration["JWT:ExpirationHours"] ?? "24");
 
     public string GenerateToken(int userId, string email)

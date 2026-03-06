@@ -378,8 +378,7 @@ public class GoogleOAuthIntegrationService : IGoogleOAuthIntegrationService
         throw new NotImplementedException("MarkEmailAsReadAsync is not yet implemented for Google provider");
     }
 
-    public async Task<List<CalendarEventDto>> GetCalendarEventsAsync(int userId, DateTime? timeMin = null,
-        DateTime? timeMax = null, int maxResults = 50)
+    public async Task<List<CalendarEventDto>> GetCalendarEventsAsync(int userId, DateTime? timeMin = null, DateTime? timeMax = null, int maxResults = 50)
     {
         var googleEvents = await GetGoogleCalendarEventsInternalAsync(userId, timeMin, timeMax);
         return googleEvents.Select(MapToGenericCalendarEventDto).ToList();
